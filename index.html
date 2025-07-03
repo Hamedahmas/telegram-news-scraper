@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telegram & Forex News Aggregator</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .feed {
+      margin-bottom: 40px;
+    }
+    .feed h2 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+    .feed ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .feed li {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .feed li a {
+      text-decoration: none;
+      color: #1a0dab;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗞️ اخبار اقتصادی و فاندامنتال (۲ روز گذشته)</h1>
+
+    <div class="feed" id="forexlive">
+      <h2>ForexLive</h2>
+      <ul></ul>
+    </div>
+
+    <div class="feed" id="fxstreet">
+      <h2>FXStreet</h2>
+      <ul></ul>
+    </div>
+
+    <div class="feed" id="investing">
+      <h2>Investing.com</h2>
+      <ul></ul>
+    </div>
+
+    <div class="feed" id="telegram">
+      <h2>تلگرام (از طریق RSSHub)</h2>
+      <ul></ul>
+    </div>
+  </div>
+
+  <script>
+    const feeds = [
+      { id: "forexlive", url: "https://www.forexlive.com/feed" },
+      { id: "fxstreet", url: "https://www.fxstreet.com/rss/news" },
+      { id: "investing", url: "https://www.investing.com/rss/news_25.rss" },
+      { id: "telegram", url: "https://rsshub.app/telegram/channel/ForexCalendar" } // یا کانال دلخواه شما
+    ];
+
+    function loadFeed(feedId, url) {
+      fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(url))
+        .then(res => res.json())
+        .then(data => {
+          const list = document.querySelector(`#${feedId} ul`);
+          list.innerHTML = "";
+          data.items.forEach(item => {
+            const pubDate = new Date(item.pubDate);
+            const now = new Date();
+            const twoDaysAgo = new Date(now.getTime() - (2 * 24 * 60 * 60 * 1000));
+            if (pubDate > twoDaysAgo) {
+              const li = document.createElement("li");
+              li.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a> - <small>${pubDate.toLocaleString()}</small>`;
+              list.appendChild(li);
+            }
+          });
+        })
+        .catch(err => {
+          document.querySelector(`#${feedId} ul`).innerHTML = `<li>خطا در بارگذاری خبرها.</li>`;
+        });
+    }
+
+    feeds.forEach(feed => loadFeed(feed.id, feed.url));
+  </script>
+</body>
+</html>
